@@ -16,7 +16,7 @@ vars:
   REPO: openemr/openemr
 
   # Fields fetched for issues (keep in sync with sync-triage/quick-sync-triage skills)
-  ISSUE_FIELDS: number,title,state,author,createdAt,updatedAt,labels,body,comments,reactionGroups,closedByPullRequestsReferences
+  ISSUE_FIELDS: number,title,state,author,createdAt,updatedAt,labels,body,comments,reactionGroups,closedByPullRequestsReferences,issueType
 
   # Fields fetched for PRs (keep in sync with sync-triage/quick-sync-triage skills)
   # Note: statusCheckRollup is intentionally excluded — it causes GitHub API
