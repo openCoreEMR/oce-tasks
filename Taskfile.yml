@@ -14,9 +14,7 @@ version: '3'
 vars:
   OUTPUT_DIR: '{{.OUTPUT_DIR | default (printf "%s/dev/openemr/triage" .HOME)}}'
   REPO: openemr/openemr
-
-  # Fields fetched for issues (keep in sync with sync-triage/quick-sync-triage skills)
-  ISSUE_FIELDS: number,title,state,author,createdAt,updatedAt,labels,body,comments,reactionGroups,closedByPullRequestsReferences,issueType
+  SCRIPTS_DIR: '{{.ROOT_DIR}}/scripts'
 
   # Fields fetched for PRs (keep in sync with sync-triage/quick-sync-triage skills)
   # Note: statusCheckRollup is intentionally excluded — it causes GitHub API
@@ -26,19 +24,13 @@ vars:
 
 tasks:
   # === GitHub Issues ===
+  # Uses GraphQL via scripts/fetch-issues.sh because gh issue list doesn't support issueType
 
   gh:issues:
     desc: Fetch all open issues and write to OUTPUT_DIR/issues.json
     silent: true
     cmds:
-      - >-
-        gh issue list
-        --repo {{.REPO}}
-        --state open
-        --limit 500
-        --json {{.ISSUE_FIELDS}}
-        > "{{.OUTPUT_DIR}}/issues.json"
-      - echo "Wrote $(jq length "{{.OUTPUT_DIR}}/issues.json") issues to {{.OUTPUT_DIR}}/issues.json"
+      - '{{.SCRIPTS_DIR}}/fetch-issues.sh {{.REPO}} "{{.OUTPUT_DIR}}/issues.json"'
 
   gh:issues:since:
     desc: 'Fetch open issues updated since SINCE timestamp (usage: task gh:issues:since SINCE=2026-01-01T00:00:00Z)'
@@ -46,15 +38,7 @@ tasks:
     requires:
       vars: [SINCE]
     cmds:
-      - >-
-        gh issue list
-        --repo {{.REPO}}
-        --state open
-        --limit 500
-        --json {{.ISSUE_FIELDS}}
-        --jq '[.[] | select(.updatedAt > "{{.SINCE}}")]'
-        > "{{.OUTPUT_DIR}}/issues.json"
-      - echo "Wrote $(jq length "{{.OUTPUT_DIR}}/issues.json") issues (since {{.SINCE}}) to {{.OUTPUT_DIR}}/issues.json"
+      - '{{.SCRIPTS_DIR}}/fetch-issues.sh {{.REPO}} "{{.OUTPUT_DIR}}/issues.json" "{{.SINCE}}"'
 
   # === GitHub Pull Requests ===
 
